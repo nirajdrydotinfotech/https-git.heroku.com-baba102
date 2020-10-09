@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import api.RestAPI.getRoute
 
-object MyServer {
+object MyServer extends App {
   val content =
     """
       |<html>
@@ -15,7 +15,6 @@ object MyServer {
       | </body>
       |</html>
     """
-  def main(args: Array[String]): Unit = {
 
     val route ={
 
@@ -39,5 +38,5 @@ object MyServer {
 
     // this actually starts the server
     Http().bindAndHandle(route, host, port)
-  }
+  
 }
