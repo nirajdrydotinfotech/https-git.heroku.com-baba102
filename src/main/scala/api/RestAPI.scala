@@ -11,7 +11,7 @@ import model.Admin
 import repo.AdminRepo
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.http.scaladsl.model.{HttpResponse, StatusCode, StatusCodes}
 import io.circe.generic.AutoDerivation
 
 import scala.concurrent.duration._
@@ -43,7 +43,7 @@ object RestAPI extends FailFastCirceSupport with AutoDerivation{
             }
         }
       }
-    } ~
+    }~
       pathPrefix("admin"){
       (post & entity(as[Admin])) { admin =>
         complete {
@@ -53,9 +53,20 @@ object RestAPI extends FailFastCirceSupport with AutoDerivation{
           }
         }
       }~
-      get{
-        complete(AdminRepo.findAll)
-      }
+        get{
+          optionalHeaderValueByName("Authorization") {
+            case Some(token) =>
+              if (jwtService.isTokenValid(token)) {
+                if (jwtService.isTokenExpired(token)) {
+                  complete(HttpResponse(status = StatusCodes.Unauthorized, entity = "Token expired."))
+                } else
+                  complete(AdminRepo.findAll)
+              } else {
+                complete(HttpResponse(status = StatusCodes.Unauthorized, entity = "Token is invalid, or has been tampered with."))
+              }
+            case _ => complete(HttpResponse(status = StatusCodes.Unauthorized, entity = "No token provided!"))
+          }
+        }
   }
 
   }
