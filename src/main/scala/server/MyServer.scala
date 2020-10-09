@@ -3,6 +3,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
+import api.RestAPI.getRoute
 
 object MyServer {
   val content =
@@ -16,13 +17,19 @@ object MyServer {
     """
   def main(args: Array[String]): Unit = {
 
-    val route = get {
-      complete(
-        HttpEntity(
-          ContentTypes.`text/html(UTF-8)`,
-          content
+    val route ={
+
+      pathPrefix("api"){
+        getRoute
+      }~
+        get {
+        complete(
+          HttpEntity(
+            ContentTypes.`text/html(UTF-8)`,
+            content
+          )
         )
-      )
+      }
     }
     implicit val system = ActorSystem("Server")
 
