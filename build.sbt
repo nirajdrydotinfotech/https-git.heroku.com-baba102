@@ -13,13 +13,14 @@ mainClass in Compile := Some("server.MyServer")
 val akkaVersion = "2.6.5"
 val akkaHttpVersion = "10.1.12"
 
-// add the Akka HTTP libraries
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
-  "org.mongodb.scala" %% "mongo-scala-driver" % "4.1.0-beta2"
+  "org.mongodb.scala" %% "mongo-scala-driver" % "4.1.0-beta2",
+  "com.pauldijou" %% "jwt-spray-json" % "4.2.0"
+
 )
 
 // https://mvnrepository.com/artifact/io.circe/circe-core

@@ -10,12 +10,16 @@ import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import model.Admin
 import repo.AdminRepo
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import io.circe.generic.AutoDerivation
 
 import scala.concurrent.duration._
 import io.circe.generic.auto._
 import sun.security.timestamp.TSResponse
+import utils.JwtService
+
+import scala.concurrent.Await
 
 object RestAPI extends FailFastCirceSupport with AutoDerivation{
   implicit val system = ActorSystem("heroku")
@@ -23,8 +27,24 @@ object RestAPI extends FailFastCirceSupport with AutoDerivation{
   import system.dispatcher
   implicit val timeout = Timeout(5.seconds)
 
-  val getRoute:Route={
-    pathPrefix("admin"){
+  val jwtService = new JwtService
+  val getRoute: Route = {
+    path("auth") {
+      post {
+        entity(as[Admin]) {
+          case Admin(_id, name, password) =>
+            Await.result(AdminRepo.checkCredential(name, password), 60.seconds) match {
+              case Some(_) =>
+                val token = jwtService.createToken(name, 1)
+                respondWithHeader(RawHeader("Access-Token", token)) {
+                  complete(StatusCodes.OK)
+                }
+              case _ => complete(StatusCodes.Unauthorized)
+            }
+        }
+      }
+    } ~
+      pathPrefix("admin"){
       (post & entity(as[Admin])) { admin =>
         complete {
           (AdminRepo.insertData(admin)).map[ToResponseMarshallable]{

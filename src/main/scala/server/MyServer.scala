@@ -38,5 +38,5 @@ object MyServer extends App {
 
     // this actually starts the server
     Http().bindAndHandle(route, host, port)
-  
+
 }
